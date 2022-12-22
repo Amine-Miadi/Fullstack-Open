@@ -4,6 +4,7 @@ import PersonForm from "./components/PersonForm.js"
 import Persons from "./components/Persons.js"
 
 const App = () => {
+  
   const [persons, setPersons] = useState([
     { name: 'Arto Hellas', number: '040-123456', id: 1 },
     { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
@@ -13,7 +14,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNum, setNewNum] = useState('')
   const [showPersons, setShown] = useState(persons)
-
+  console.log(persons, "persons")
+  console.log(showPersons, "showpersons")
   const handlePersonchange = (event) => {
     setNewName(event.target.value)
   }
@@ -28,8 +30,14 @@ const App = () => {
     event.preventDefault()
     const result = persons.map(person => JSON.stringify(person.name) === JSON.stringify(newName)
     ?true:false)
-    result.includes(true)? alert(`${newName} alredy in the list`)
-    :setPersons(persons.concat({ name: newName, number: newNum }))
+    if (result.includes(true)){
+      alert(`${newName} alredy in the list`)
+    } 
+    else{
+      setPersons(persons.concat({ name: newName, number: newNum }))
+      setShown(persons.concat({ name: newName, number: newNum }))
+    }
+    
   }
   return (
     <div>
