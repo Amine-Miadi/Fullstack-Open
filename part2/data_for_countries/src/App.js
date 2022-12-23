@@ -11,9 +11,58 @@ const Form = (props) =>{
   )
 }
 
+const Button = (props) =>{
+  return(
+  <button onClick={() => props.handleButton(props.indx)}>show</button>
+  )
+}
+
+const Display = (props) =>{
+  function handleButton(indx){
+    props.setSelected(indx)
+  }
+
+
+  if(props.filteredcountries.length > 10){
+    return(
+      <div>list is too long</div>
+    )
+  }
+
+  else if(props.filteredcountries.length > 1 && props.selected === null){
+    return(
+      <div>
+        {(props.filteredcountries.map((country,key) =>
+          <li key = {key}>
+            {country.name.common}    <Button indx = {key} handleButton={handleButton}/>
+          </li>
+          )
+        )}
+      </div>
+    ) 
+  }
+
+  if(props.selected !== null || props.filteredcountries.length === 1){
+    const languages = Object.values(props.filteredcountries[0].languages)
+    if(props.filteredcountries.length === 1)props.setSelected(0)
+    return(
+      <div>
+        <h1>{props.filteredcountries[props.selected].name.common}</h1>
+        capital: {props.filteredcountries[props.selected].capital[0]}
+        <br/>
+        area: {props.filteredcountries[props.selected].area}
+        <h3>Languages</h3>
+        <ul>
+          {languages.map((language,i) => <li key = {i}>{language}</li>)}
+        </ul>
+        <img src = {props.filteredcountries[props.selected].flags.png} alt ="flag"></img>
+      </div>
+    )
+  }
+}
+
 
 function App() {
-
   const hook = () => {
     axios.get('https://restcountries.com/v3.1/all')
     .then(response => {
@@ -26,41 +75,19 @@ function App() {
 
   const [countries,setCountries] = useState([])
   const [lookup,setLookup] = useState('')
-  const [display, setDisplay] = useState()
+  const [filteredcountries,setFiltered] = useState([])
+  const [selected,setSelected] = useState(null)
 
   const handleChange = (event) =>{
+    setFiltered(countries.filter(country => country.name.common.toLocaleLowerCase().includes(event.target.value.toLocaleLowerCase())))
     setLookup(event.target.value)
-    const filteredwountries = countries.filter(country => country.name.common.toLocaleLowerCase().includes(event.target.value.toLocaleLowerCase()))
-    if(filteredwountries.length > 10){
-      setDisplay("list is too long")
-    }
-    
-    else if (filteredwountries.length === 1){
-      const languages = Object.values(filteredwountries[0].languages)
-      setDisplay(
-        <div>
-          {console.log(filteredwountries[0].name.common)}
-          <h1>{filteredwountries[0].name.common}</h1>
-          capital: {filteredwountries[0].capital[0]}
-          <br/>
-          area: {filteredwountries[0].area}
-          <h3>Languages</h3>
-          <ul>
-            {languages.map(language => <li>{language}</li>)}
-          </ul>
-          <img src = {filteredwountries[0].flags.png} alt ="flag"></img>
-        </div>
-      )
-    }
-    else if(filteredwountries.length < 10){
-      setDisplay(filteredwountries.map((country,key) => <li key = {key}>{country.name.common}</li>))
-    }
+    setSelected(null)
   }
 
   return (
     <div>
       <Form handle = {handleChange} name = {lookup}/>
-      {display}
+      <Display filteredcountries = {filteredcountries} selected={selected} setSelected = {setSelected}/>
     </div>
   );
 }
