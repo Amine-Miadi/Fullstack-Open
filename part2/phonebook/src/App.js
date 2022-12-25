@@ -2,47 +2,76 @@ import { useState,useEffect } from 'react'
 import Filter from "./components/Filter.js"
 import PersonForm from "./components/PersonForm.js"
 import Persons from "./components/Persons.js"
-import axios from 'axios'
+import server from './services/server.js'
 
 const App = () => {
   
-  const hook = () =>{
-    axios.get('http://localhost:3001/persons')
-    .then(response => {
-      setPersons(response.data)
-      setShown(response.data)
+
+  useEffect(() =>{
+    server.getall()
+    .then(data => {
+      setPersons(data)
+      setShown(data)
     })
-  }
-  useEffect(hook,[])
+  },[])
+
   const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNum, setNewNum] = useState('')
   const [showPersons, setShown] = useState(persons)
-  console.log(persons, "persons")
-  console.log(showPersons, "showpersons")
+
   const handlePersonchange = (event) => {
     setNewName(event.target.value)
   }
+
   const handleNumchange = (event) => {
     setNewNum(event.target.value)
   }
+
   const handleFilter = (event) =>{
     setShown(persons.filter(person => person.name.toLocaleLowerCase().includes(event.target.value.toLocaleLowerCase())))
   }
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    const result = persons.map(person => JSON.stringify(person.name) === JSON.stringify(newName)
-    ?true:false)
-    if (result.includes(true)){
-      alert(`${newName} alredy in the list`)
+    const existingperson = persons.find(person => JSON.stringify(person.name) === JSON.stringify(newName))
+
+    if (existingperson){
+      if (window.confirm(`${existingperson.name} is already added to the phonebook, replace old number with a new one?`)){
+        server.update(existingperson.id,{name: newName,number: newNum})
+        .then(() => {
+          server.getall()
+          .then(data => {
+            setPersons(data)
+            setShown(data)
+          })
+        })
+      }
     } 
     else{
-      setPersons(persons.concat({ name: newName, number: newNum }))
-      setShown(persons.concat({ name: newName, number: newNum }))
+      server.create({ name: newName, number: newNum })
+      .then(response => {
+        setPersons(persons.concat(response))
+        setShown(persons.concat(response))
+      })
     }
     
   }
+
+  function handleDelete(id){
+    const person = persons.find(person => person.id === id)
+    if (window.confirm(`do you really want to delete ${person.name}?`)) {
+      server.remove(id)
+      .then(response => {
+        server.getall()
+        .then(data => {
+          setPersons(data)
+          setShown(data)
+        })
+      })
+    }
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -58,7 +87,7 @@ const App = () => {
           handleNumchange = {handleNumchange}
         />
       <h2>Numbers</h2>
-      <Persons showPersons={showPersons} />
+      <Persons showPersons={showPersons} handleDelete={handleDelete}/>
     </div>
   )
 }
