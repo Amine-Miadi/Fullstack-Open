@@ -1,4 +1,6 @@
+const { json } = require('express')
 const express = require('express')
+var morgan = require('morgan')
 const app = express()
 
 
@@ -25,8 +27,14 @@ var persons =
       "number": "39-23-6423122"
     }
 ]
-
 app.use(express.json())
+
+morgan.token('data', function getData (req) {
+    const body = JSON.stringify(req.body);
+    return body})
+
+
+app.use(morgan(' :method :url :status :res[content-length] - :response-time ms :data'))
 
 app.get('/api/persons',(req,res)=>{
     res.json(persons)
@@ -54,12 +62,10 @@ app.delete('/api/persons/:id',(req,res)=>{
     const id = Number(req.params.id)
     persons = persons.filter(person => person.id !== id)
     res.status(204).end()
-    console.log(persons)
 })
 
 app.post('/api/persons',(req,res)=>{
     const body = req.body
-    console.log(req.body)
     if (!body.name) {
         return res.status(400).json({ 
         error: 'name is missing' 
@@ -69,7 +75,6 @@ app.post('/api/persons',(req,res)=>{
             error: 'number is missing' 
         })
     }else if(persons.find(person => person.name === body.name)){
-        console.log("eyo wtf")
         return res.status(400).json({ 
             error: 'name must be unique' 
         })
@@ -82,6 +87,7 @@ app.post('/api/persons',(req,res)=>{
     persons = persons.concat(person)
     res.json(persons)
 })
+
 
 const PORT = 3001
 app.listen(PORT, () => {
