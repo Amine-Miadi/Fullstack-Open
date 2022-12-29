@@ -29,7 +29,7 @@ var persons =
     }
 ]
 app.use(express.json())
-
+app.use(express.static('build'))
 morgan.token('data', function getData (req) {
     const body = JSON.stringify(req.body);
     return body})
@@ -91,7 +91,7 @@ app.post('/api/persons',(req,res)=>{
 })
 
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
