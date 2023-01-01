@@ -36,29 +36,58 @@ const App = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    const existingperson = persons.find(person => JSON.stringify(person.name) === JSON.stringify(newName))
-
-    if (existingperson){
-      if (window.confirm(`${existingperson.name} is already added to the phonebook, replace old number with a new one?`)){
-        server
-        .update(existingperson.id,{name: newName,number: newNum})
-        //upon successful update
-        .then(() => {
-          //pop success message
-          setMessage({text: `updated ${existingperson.name} successfully`,code: 1})
-            setTimeout(() => {
-              setMessage({message: null,code: -1})
-            }, 5000);
-          //get data from server to display it 
-          server.getall()
+    server.getall()
           .then(data => {
             setPersons(data)
-            setShown(data)
           })
+    .then(() =>{
+      const existingperson = persons.find(person => JSON.stringify(person.name) === JSON.stringify(newName))
+      if (existingperson){
+        if (window.confirm(`${existingperson.name} is already added to the phonebook, replace old number with a new one?`)){
+          server
+          .update(existingperson.id,{name: newName,number: newNum})
+          //upon successful update
+          .then(() => {
+            //pop success message
+            setMessage({text: `updated ${existingperson.name} successfully`,code: 1})
+              setTimeout(() => {
+                setMessage({message: null,code: -1})
+              }, 5000);
+            //get data from server to display it 
+            server.getall()
+            .then(data => {
+              setPersons(data)
+              setShown(data)
+            })
+          })
+          //catch 404 error
+          .catch(error => {
+            setMessage({text: `${existingperson.name} already deleted from server`,code: 0})
+              server.getall()
+              .then(data => {
+                setPersons(data)
+                setShown(data)
+              })
+              setTimeout(() => {
+                setMessage({message: null,code: -1})
+              }, 5000);
+          })
+        }
+      }
+      //normal upload
+      else{
+        server.create({ name: newName, number: newNum })
+        .then(response => {
+          setPersons(persons.concat(response))
+          setShown(persons.concat(response))
+          setMessage({text: `added ${newName} successfully!`, code:1})
+          setTimeout(() => {
+            setMessage({message: null,code: -1})
+          }, 5000);
         })
-        //catch 404 error
+        //handle missing information errors
         .catch(error => {
-          setMessage({text: `${existingperson.name} already deleted from server`,code: 0})
+          setMessage({text: error.response.data.error,code: 0})
             server.getall()
             .then(data => {
               setPersons(data)
@@ -68,20 +97,9 @@ const App = () => {
               setMessage({message: null,code: -1})
             }, 5000);
         })
+        
       }
-    } 
-    else{
-      server.create({ name: newName, number: newNum })
-      .then(response => {
-        setPersons(response)
-        setShown(response)
-      })
-      setMessage({text: `added ${newName} successfully!`, code:1})
-      setTimeout(() => {
-        setMessage({message: null,code: -1})
-      }, 5000);
-    }
-    
+    })
   }
 
   function handleDelete(id){
@@ -93,14 +111,18 @@ const App = () => {
         setMessage({text: `successfully deleted ${person.name}`, code:1})
         setTimeout(() => {
           setMessage({message: null,code: -1})
-        }, 5000);
+        }, 5000)})
+      .finally(response => {
         server.getall()
         .then(data => {
           setPersons(data)
           setShown(data)
         })
       })
+        
+      
       .catch(error => {
+        console.log(error)
         server.getall()
             .then(data => {
               setPersons(data)

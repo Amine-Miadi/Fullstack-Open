@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const url = '/api/persons'
+const url = 'http://localhost:3001/api/persons'
 
 
 const getall = () => {
@@ -10,6 +10,7 @@ const getall = () => {
 
 const create = (newPerson) => {
     const response = axios.post(url,newPerson)
+    console.log(response)
     return response.then(response => response.data)
  }
 
