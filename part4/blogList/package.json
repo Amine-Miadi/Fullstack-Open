@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose",
-    "dev": "nodemon index.js"
+    "start": "cross-env NODE_ENV=production node index.js",
+    "test": "cross-env NODE_ENV=test jest --verbose --runInBand --detectOpenHandles --forceExit",
+    "dev": "cross-env NODE_ENV=development nodemon index.js"
   },
   "author": "Amine Miadi",
   "license": "ISC",

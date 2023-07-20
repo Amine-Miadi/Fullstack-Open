@@ -64,13 +64,6 @@ const listWithOneBlog = [
 ]
 
 
-test('dummy returns one', () => {
-  const blogs = []
-
-  const result = listHelper.dummy(blogs)
-  expect(result).toBe(1)
-})
-
 describe('total likes', () => {
   //multi blog list, sum adds up to 36
   test('when list has many blogs', () => {
@@ -110,6 +103,6 @@ test('test for author with the most likes', () =>{
     {
       author: "Edsger W. Dijkstra",
       likes: 17
-    }
+    } 
     )
 })

@@ -9,6 +9,9 @@ const app = express()
 
 
 const mongoUrl = config.MONGODB_URI
+
+mongoose.set('strictQuery', false);
+
 mongoose.connect(mongoUrl)
 .then(() => {
     console.log('connected to MongoDB')
@@ -16,6 +19,8 @@ mongoose.connect(mongoUrl)
 .catch((error) => {
     console.log('error connecting to MongoDB:', error.message)
 })
+
+
 
 app.use(cors())
 app.use(express.json())
